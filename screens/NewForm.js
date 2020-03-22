@@ -1,15 +1,52 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, Alert } from 'react-native';
+import { View, Text, Button, Alert, AsyncStorage } from 'react-native';
 
 import AutoComplete from 'react-native-autocomplete-select';
 import Select from 'react-native-simple-select';
 
+const MY_KEY = 'MyTestKey2';
+
 import * as Contacts from 'expo-contacts';
+import _ from 'lodash';
+
 export default function App() {
   const [ contact, setContact ] = useState([]);
   const [ P1, setP1 ] = useState("Me");
   const [ P2, setP2 ] = useState("");
   const [ stat, setStat ] = useState("Unknown");
+  const [submit, setSubmit] = useState(false);
+
+  const getData = async () => {
+    try {
+      const value = await AsyncStorage.getItem(MY_KEY);
+      if (value !== null) {
+        // We have data!!
+        return value;
+      }
+    } catch (error) {
+      // Error retrieving data
+      return null;
+    }
+  };
+
+  const setData = async () => {
+    if (submit) {
+      try {
+        const prevDataStr = await getData();
+        const prevData = prevDataStr ? JSON.parse(prevDataStr) : {};
+        console.log(prevData);
+        prevData[P1]  = prevData[P1] ? _.concat(prevData[P1], P2) : [P2];
+        prevData[P2]  = prevData[P2] ? _.concat(prevData[P2], P1) : [P1];
+
+        const _ret = await AsyncStorage.setItem(MY_KEY, JSON.stringify(prevData));
+
+        setSubmit(false);
+        console.log('Data Submitted');
+      } catch (error) {
+        console.log('Heinous Error', error);
+      }
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -26,9 +63,14 @@ export default function App() {
     })();
   }, []);
 
-  const contactList = contact.map(x => {return {text: x.name} })
+  useEffect(() => {
+      setData();
+  }, [submit]);
+
+
+  const contactList = contact.map(x => {return {text: x.name} });
   const statusList = ['Positive', 'Negative', 'Unknown'];
-  console.log(stat);
+
   return (
     <View
       style={{
@@ -75,7 +117,7 @@ export default function App() {
           onSelect={setStat}
           style={{flex: 5}}
         />
-        
+
       </View>
 
       <View
@@ -83,7 +125,7 @@ export default function App() {
       >
         <Button
               title="Submit"
-              onPress={() => Alert.alert('Submitted')}
+              onPress={(e) => setSubmit(true)}
         />
       </View>
       <View style={{ flex: 6 }}/>
