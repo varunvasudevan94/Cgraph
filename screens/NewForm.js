@@ -1,54 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, Button, Alert, AsyncStorage } from 'react-native';
+import { View, Text, Button } from 'react-native';
+
+import { P1_DEFAULT, P2_DEFAULT, SUBMIT_DEFAULT, UNKNOWN, POSITIVE, NEGATIVE } from '../consts';
 
 import AutoComplete from 'react-native-autocomplete-select';
 import Select from 'react-native-simple-select';
 
-const MY_KEY = 'MyTestKey2';
-
 import * as Contacts from 'expo-contacts';
-import _ from 'lodash';
+
+import { getData, setData } from '../utils';
 
 export default function App() {
   const [ contact, setContact ] = useState([]);
-  const [ P1, setP1 ] = useState("Me");
-  const [ P2, setP2 ] = useState("");
-  const [ stat, setStat ] = useState("Unknown");
-  const [submit, setSubmit] = useState(false);
+  const [ P1, setP1 ] = useState(P1_DEFAULT);
+  const [ P2, setP2 ] = useState(P2_DEFAULT);
+  const [ stat1, setStat1 ] = useState(UNKNOWN);
+  const [ stat2, setStat2 ] = useState(UNKNOWN);
+  const [submit, setSubmit] = useState(SUBMIT_DEFAULT);
 
-  const getData = async () => {
-    try {
-      const value = await AsyncStorage.getItem(MY_KEY);
-      if (value !== null) {
-        // We have data!!
-        return value;
-      }
-    } catch (error) {
-      // Error retrieving data
-      return null;
-    }
-  };
-
-  const setData = async () => {
-    if (submit) {
-      try {
-        const prevDataStr = await getData();
-        const prevData = prevDataStr ? JSON.parse(prevDataStr) : {};
-        console.log(prevData);
-        prevData[P1]  = prevData[P1] ? _.concat(prevData[P1], P2) : [P2];
-        prevData[P2]  = prevData[P2] ? _.concat(prevData[P2], P1) : [P1];
-
-        const _ret = await AsyncStorage.setItem(MY_KEY, JSON.stringify(prevData));
-
-        setSubmit(false);
-        console.log('Data Submitted');
-      } catch (error) {
-        console.log('Heinous Error', error);
-      }
-    }
-  };
 
   useEffect(() => {
+    // XXX -  Move Read contacts to utils
     (async () => {
       const { status } = await Contacts.requestPermissionsAsync();
       if (status === 'granted') {
@@ -64,12 +36,18 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-      setData();
+      // Perform some validations here
+      setData(submit, stat1, stat2, P1, P2);
+      setSubmit(SUBMIT_DEFAULT);
+      setP1(P2_DEFAULT);
+      setP2(P1_DEFAULT);
+      setStat1(UNKNOWN);
+      setStat2(UNKNOWN);
   }, [submit]);
 
 
   const contactList = contact.map(x => {return {text: x.name} });
-  const statusList = ['Positive', 'Negative', 'Unknown'];
+  const statusList = [UNKNOWN, POSITIVE, NEGATIVE];
 
   return (
     <View
@@ -93,6 +71,17 @@ export default function App() {
         />
       </View>
       <View
+        style={{flexDirection: 'column', flex:1}}
+      >
+        <Select
+          items={statusList}
+          promptText="Select the status of Virus"
+          onSelect={setStat1}
+          style={{flex: 5}}
+        />
+
+      </View>
+      <View
         style={{flexDirection: 'row'}}
       >
         <Text style={{marginTop: 4, flex: 1}}>
@@ -114,7 +103,7 @@ export default function App() {
         <Select
           items={statusList}
           promptText="Select the status of Virus"
-          onSelect={setStat}
+          onSelect={setStat2}
           style={{flex: 5}}
         />
 
