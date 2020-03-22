@@ -1,5 +1,5 @@
 
-const VERSION = 1.1
+const VERSION = 1.2
 export const MY_GRAPH = `MyTestKey${VERSION}`;
 export const AFFECTED_LIST = `MyAffectedTest${VERSION}`;
 export const POSITIVE = 'Positive';

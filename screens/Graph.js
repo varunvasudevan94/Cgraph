@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import {
   AppRegistry,
   StyleSheet,
@@ -6,182 +6,71 @@ import {
   View
 } from 'react-native';
 import AwesomeHierarchyGraph from 'react-native-d3-tree-graph'
+import Graph from 'graph-data-structure';
+import _ from 'lodash';
 
-var root = {
-    name: "",
-    id: 1,
-    hidden: true,
-    children: [ {
-            name: "Q",
-            id: 16,
-            no_parent: true,
-            imageUrl: { href: { uri: "https://facebook.github.io/react-native/docs/assets/favicon.png"}},
-            nodeImageStyle: { imageHeight: 60 , imageWidth: 60, opacity: 1 },
-            nodeTextStyle: { fontSize: 12 }
-        },
-        {
-        name: "",
-        id: 2,
-        no_parent: true,
-        hidden: true,
-        children: [{
-            name: "J",
-            id: 12,
-            imageUrl: { href: { uri: "https://facebook.github.io/react-native/docs/assets/favicon.png"}},
-            nodeImageStyle: { imageHeight: 60 , imageWidth: 60, opacity: 1, color: "red" },
-            nodeTextStyle: { fontSize: 12 }
-        }, {
-            name: "L",
-            id: 13,
-            no_parent: true,
-            imageUrl: { href: { uri: "https://facebook.github.io/react-native/docs/assets/favicon.png"}},
-            nodeImageStyle: { imageHeight: 60 , imageWidth: 60, opacity: 1 },
-            nodeTextStyle: { fontSize: 12 }
-        }, {
-            name: "C",
-            id: 3,
-            imageUrl: { href: { uri: "https://facebook.github.io/react-native/docs/assets/favicon.png"}},
-            nodeImageStyle: { imageHeight: 60 , imageWidth: 60, opacity: 1 },
-            nodeTextStyle: { fontSize: 12 }
-        }, {
-            name: "",
-            id: 4,
-            hidden: true,
-            no_parent: true,
-            children: [{
-                name: "D",
-                id: 5,
-                imageUrl: { href: { uri: "https://facebook.github.io/react-native/docs/assets/favicon.png"}},
-                nodeImageStyle: { imageHeight: 60 , imageWidth: 60, opacity: 1 },
-                nodeTextStyle: { fontSize: 12 }
-            }, {
-                name: "",
-                id: 14,
-                hidden: true,
-                no_parent: true,
-                children: [{
-                    name: "P",
-                    id: 15,
-                    imageUrl: { href: { uri: "https://facebook.github.io/react-native/docs/assets/favicon.png"}},
-                    nodeImageStyle: { imageHeight: 60 , imageWidth: 60, opacity: 1 },
-                    nodeTextStyle: { fontSize: 12 }
-                }]
-            }, {
-                name: "E",
-                id: 6,
-                imageUrl: { href: { uri: "https://facebook.github.io/react-native/docs/assets/favicon.png"}},
-                nodeImageStyle: { imageHeight: 60 , imageWidth: 60, opacity: 1 },
-                nodeTextStyle: { fontSize: 12 }
-            }]
-        }, {
-            name: "K",
-            id: 11,
-            imageUrl: { href: { uri: "https://facebook.github.io/react-native/docs/assets/favicon.png"}},
-            nodeImageStyle: { imageHeight: 60 , imageWidth: 60, opacity: 1 },
-            nodeTextStyle: { fontSize: 12 }
-        }]
-    }, {
-        name: "M",
-        id: 10,
-        no_parent: true,
-        imageUrl: { href: { uri: "https://facebook.github.io/react-native/docs/assets/favicon.png"}},
-        nodeImageStyle: { imageHeight: 60 , imageWidth: 60, opacity: 1 },
-        nodeTextStyle: { fontSize: 12 },
-        children: [
+import { MY_GRAPH, AFFECTED_LIST, POSITIVE } from '../consts';
+import { getData } from '../utils';
 
-        ]
-    },
-    {
-        name: "anoop",
-        id: 155,
-        no_parent: true,
-        children: [{
-            name: "H",
-            id: 8,
-        }, {
-            name: "I",
-            id: 9,
-        },
-        {
-            name: "I",
-            id: 9,
-        },
-        {
-            name: "I",
-            id: 9,
-        },
-        {
-            name: "I",
-            id: 9,
-        },
-
-      ]
-    },
-    {
-            name: "x",
-            id: 16,
-            no_parent: true
-        }
-
-  ]
+const fetchData = async () => {
+  const graphDataStr = await getData(MY_GRAPH);
+  const graphData = graphDataStr ? JSON.parse(graphDataStr) : {};
+  return graphData ? graphData : null;
 }
 
-var siblings = [{
-    source: {
-        id: 3,
-        name: "C"
-    },
-    target: {
-        id: 11,
-        name: "K"
-    }
-}, {
-    source: {
-        id: 12,
-        name: "L"
-    },
-    target: {
-        id: 13,
-        name: "J"
-    }
-}, {
-    source: {
-        id: 5,
-        name: "D"
-    },
-    target: {
-        id: 6,
-        name: "E"
-    }
-}, {
-    source: {
-        id: 16,
-        name: "Q"
-    },
-    target: {
-        id: 10,
-        name: "M"
-    }
-}];
+const recursiveTree = (nodeList) => {
+  if (nodeList.length <= 0) {
+    return [];
+  }
+  const head = nodeList.pop();
+  console.log(head);
+  console.log(nodeList);
+  return {id: head,
+    name: head,
+    nodeTextStyle: { fontSize: 12 },
+    imageUrl: { href: { uri: "https://facebook.github.io/react-native/docs/assets/favicon.png"}},
+    nodeImageStyle: { imageHeight: 60 , imageWidth: 60, opacity: 1 },
+    children : [recursiveTree(nodeList)]};
+}
+export default function () {
+  const [graphData, setGraphData] = useState({});
+  useEffect(() => {
+    // XXX -  Move Read contacts to utils
+    (async () => {
+      const rawGraphData = await fetchData();
+          if (rawGraphData) {
+            const links = _.flatten(_.keys(rawGraphData)
+                            .map(x => rawGraphData[x]
+                            .map(y => {return {source :x, target :y, weight: 1}})));
+            const nodes = _.keys(graph).map(x => {return {id:x}})
+            const gr = {links: links, nodes: nodes};
+            const graph = Graph(gr);
+            setGraphData(recursiveTree(graph.depthFirstSearch()));
+          }
+      })();
+    }, []);
 
 
-export default function Graph() {
     return (
         <View style={styles.container}>
+        <View style={{flex:1}}>
         <AwesomeHierarchyGraph
-         root = {root}
-         siblings = {siblings}
+         root = {graphData}
+         siblings = {{}}
         />
+        </View>
        </View>
     );
+
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
     backgroundColor: '#F5FCFF',
+    flexDirection: 'row'
   },
   welcome: {
     fontSize: 20,
