@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack'
 
 import Home from './screens/Home';
 import Graph from './screens/Graph';
+import NewForm from './screens/NewForm';
 
 
 function MainStackNavigator() {
@@ -25,14 +26,14 @@ function MainStackNavigator() {
 
         <Stack.Screen
             name='NewForm'
-            component={Graph}
-            options={{ title: 'Visualize' }}
+            component={NewForm}
+            options={{ title: 'New Entry' }}
         />
 
         <Stack.Screen
             name='Status'
             component={Graph}
-            options={{ title: 'Visualize' }}
+            options={{ title: 'Change Status' }}
         />
 
       </Stack.Navigator>
