@@ -25,7 +25,7 @@ To add a new entry, lets say you came into contact with "Anand" add the below en
 <img src="assets/NewEntry.png" width="200" height="400" />
 
 ### Visualisation
-Since data is boring, you can see the visualisation of the affected people, we make if any connected person is positive we mark the whole connected subgraph as positive. <br/>
+Since data is boring, you can see the visualisation of the affected people, we make the whole subgraph positive if we find even on person in the subgraph as positive thus alerting the user. <br/>
 <img src="assets/Visualisation.png" width="200" height="400" />
 
 ### Change Status
