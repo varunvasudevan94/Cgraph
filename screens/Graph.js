@@ -5,8 +5,9 @@ import {
   Text,
   View
 } from 'react-native';
-import AwesomeHierarchyGraph from 'react-native-d3-tree-graph'
+
 import Graph from 'graph-data-structure';
+import NetworkGraph from './G';
 import _ from 'lodash';
 
 import { MY_GRAPH, AFFECTED_LIST, POSITIVE } from '../consts';
@@ -33,19 +34,21 @@ const recursiveTree = (nodeList) => {
     children : [recursiveTree(nodeList)]};
 }
 export default function () {
-  const [graphData, setGraphData] = useState({});
+  const [ graphData, setGraphData] = useState({});
+  const [ nodes, setNodes ] = useState([]);
+  const [ currentNode, setCurrentNode ] = useState(0);
+
   useEffect(() => {
     // XXX -  Move Read contacts to utils
     (async () => {
       const rawGraphData = await fetchData();
           if (rawGraphData) {
-            const links = _.flatten(_.keys(rawGraphData)
-                            .map(x => rawGraphData[x]
-                            .map(y => {return {source :x, target :y, weight: 1}})));
-            const nodes = _.keys(graph).map(x => {return {id:x}})
-            const gr = {links: links, nodes: nodes};
-            const graph = Graph(gr);
-            setGraphData(recursiveTree(graph.depthFirstSearch()));
+            const nodes = _.keys(rawGraphData).map(x => x);
+            const newValues = _.keys(rawGraphData).map(x => rawGraphData[x].map(y => nodes.indexOf(y)))
+            const newKeys = _.keys(rawGraphData).map( x => nodes.indexOf(x));
+            const newGraph = _.fromPairs(_.zip(newKeys, newValues));
+            setNodes(nodes);
+            setGraphData(newGraph);
           }
       })();
     }, []);
@@ -53,12 +56,17 @@ export default function () {
 
     return (
         <View style={styles.container}>
-        <View style={{flex:1}}>
-        <AwesomeHierarchyGraph
-         root = {graphData}
-         siblings = {{}}
-        />
-        </View>
+          <NetworkGraph
+            selectedCircleIndex={currentNode}
+            circleTitles={nodes}
+            connections={graphData}
+            containerHeight={300}
+            containerWidth={300}
+            centralCircleRadius={40}
+            otherCircleLinesColor="black"
+            otherCirclesRadius={40}
+            distanceFromCenter={100}
+            onCircleClick={setCurrentNode}/>
        </View>
     );
 

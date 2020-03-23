@@ -39,8 +39,8 @@ export default function App() {
       // Perform some validations here
       setData(submit, stat1, stat2, P1, P2);
       setSubmit(SUBMIT_DEFAULT);
-      setP1(P2_DEFAULT);
-      setP2(P1_DEFAULT);
+      setP1(P1_DEFAULT);
+      setP2(P2_DEFAULT);
       setStat1(UNKNOWN);
       setStat2(UNKNOWN);
   }, [submit]);
