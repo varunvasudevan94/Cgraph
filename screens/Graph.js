@@ -13,6 +13,32 @@ import _ from 'lodash';
 import { MY_GRAPH, AFFECTED_LIST, POSITIVE, P1_DEFAULT } from '../consts';
 import { fetchData } from '../utils';
 
+
+const dfs = (graph, root, visited) => {
+  if (visited[root]) {
+    return 0;
+  }
+  const children = graph[root];
+  visited[root] = true;
+  const _ret = children.map(x => dfs(graph, x, visited));
+
+}
+const updateStatus = (graph, affectedList) => {
+  const keys = _.keys(graph);
+  const visited = _.fromPairs(_.zip(keys, keys.map(x => false)));
+
+  const _ret = affectedList.map(x => dfs(graph, x, visited));
+
+  const newAffectedList = _.keys(_.keys(visited)
+  .filter(key => visited[key])
+  .reduce((obj, key) => {
+    obj[key] = visited[key];
+    return obj;
+  }, {}));
+
+  return newAffectedList;
+}
+
 export default function () {
     useEffect(() => {
     // XXX -  Move Read contacts to utils
@@ -29,7 +55,10 @@ export default function () {
 
             if (rawAffectedList) {
                   // Compute this from the graph
-                  const affectedList = rawAffectedList.map(x => nodes.indexOf(x));
+                  // Find the connected parts over here
+                  updateList = updateStatus(rawGraphData, rawAffectedList);
+                  const affectedList = updateList.map(x => nodes.indexOf(x));
+
                   setAffectedList(affectedList);
             }
       }
