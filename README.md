@@ -49,3 +49,4 @@ You are always welcome for any code changes (PR or suggestions). Its public app 
 ## Todo
 1. Work on CSS
 2. Extend to share your personal tracker via bluetooth
+3. Time based tracking
