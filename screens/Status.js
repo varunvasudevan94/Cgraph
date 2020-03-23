@@ -13,7 +13,7 @@ import { getData, setData, fetchData } from '../utils';
 
 export default function App() {
   const [ contact, setContact ] = useState([]);
-  const [ P1, setP1 ] = useState(P1_DEFAULT);
+  const [ P1, setP1 ] = useState(P2_DEFAULT);
   const [ stat1, setStat1 ] = useState(UNKNOWN);
   const [submit, setSubmit] = useState(SUBMIT_DEFAULT);
 
@@ -23,7 +23,6 @@ export default function App() {
     const rawGraphData = await fetchData(MY_GRAPH);
     if (rawGraphData) {
           const nodes = _.keys(rawGraphData).map(x => {return {name: x}});
-          console.log(nodes);
           setContact(nodes);
     }
    })();
@@ -36,14 +35,17 @@ export default function App() {
         (async () => {
           const rawAffectedList = await fetchData(AFFECTED_LIST);
           if (rawAffectedList) {
-                const newList = _.concat(rawAffectedList, [P1]);
+
+                const newList = stat1 === POSITIVE ? _.concat(rawAffectedList, [P1]) :
+                          _.remove(rawAffectedList, x => _.indexOf([P1] , x) === -1);;
+                setP1(P2_DEFAULT);
+                setSubmit(SUBMIT_DEFAULT);
                 // Write this into file
                 const _ret = await
                             AsyncStorage.setItem(AFFECTED_LIST,
                               JSON.stringify(_.uniq(newList)));
                 Alert.alert(`Status of ${P1} changed to ${stat1}`);
-                setP1(P1_DEFAULT);
-                setSubmit(SUBMIT_DEFAULT);
+
 
           }
          })();
@@ -53,8 +55,6 @@ export default function App() {
 
   const contactList = contact.map(x => {return {text: x.name} });
   const statusList = [UNKNOWN, POSITIVE, NEGATIVE];
-  console.log('ggggggggggggg');
-  console.log()
   return (
     <View
       style={{

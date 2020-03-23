@@ -39,7 +39,7 @@ export default function () {
     const [ graphData, setGraphData] = useState({});
     const [ affectedList, setAffectedList] = useState([]);
     const [ nodes, setNodes ] = useState([]);
-    console.log(affectedList);
+
 
     return (
         <View style={styles.container}>
@@ -54,7 +54,7 @@ export default function () {
             otherCircleLinesColor="black"
             otherCirclesRadius={40}
             distanceFromCenter={100}
-            onCircleClick={console.log}/>
+            onCircleClick={(x)=>null}/>
        </View>
     );
 
@@ -63,7 +63,7 @@ export default function () {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     alignItems: 'flex-start',
     backgroundColor: '#F5FCFF',
     flexDirection: 'row'

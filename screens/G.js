@@ -92,8 +92,6 @@ class NetworkGraph extends Component
         let circleStrokeColor = otherCircleFillColor;
         if(_.includes(selectCircleAttachees, index))
         circleStrokeColor = centralCircleFillColor
-        console.log('*************');
-        console.log(markCircles);
         const color = markCircles.indexOf(index) === -1 ? "green" : "red";
         return (
           <G key={"circle"+index} onPress={this.circleClicked(index)}>
