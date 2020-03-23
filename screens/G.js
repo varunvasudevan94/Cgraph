@@ -81,7 +81,7 @@ class NetworkGraph extends Component
     return allLinesForCurrentCircle;
   }
 
-  addCircles() {
+  addCircles(markCircles) {
     const {circleTitles, connections, centralCircleFillColor, otherCirclesRadius, otherCircleTextColor, otherCircleFillColor, selectedCircleIndex} = this.props;
     let circleElements = circleTitles.map( (title, index)=> {
         if(index===selectedCircleIndex)
@@ -92,10 +92,13 @@ class NetworkGraph extends Component
         let circleStrokeColor = otherCircleFillColor;
         if(_.includes(selectCircleAttachees, index))
         circleStrokeColor = centralCircleFillColor
+        console.log('*************');
+        console.log(markCircles);
+        const color = markCircles.indexOf(index) === -1 ? "green" : "red";
         return (
           <G key={"circle"+index} onPress={this.circleClicked(index)}>
-            <Circle cx={circleCoOrds.xCordinate} cy={circleCoOrds.yCordinate} r={otherCirclesRadius} stroke={circleStrokeColor} strokeWidth="2" fill={otherCircleFillColor}/>
-            <Text x={circleCoOrds.xCordinate-10} y={circleCoOrds.yCordinate-10} fill={otherCircleTextColor} stroke={otherCircleTextColor}>{title}</Text>
+            <Circle cx={circleCoOrds.xCordinate} cy={circleCoOrds.yCordinate} r={otherCirclesRadius}  strokeWidth="2" fill={color}/>
+            <Text x={circleCoOrds.xCordinate-20} y={circleCoOrds.yCordinate} fill={otherCircleTextColor} stroke={otherCircleTextColor} style={{fontSize: 9, justifyContent: "center"}}>{title}</Text>
           </G>
         )
     });
@@ -103,7 +106,7 @@ class NetworkGraph extends Component
   }
 
   render() {
-    const { centralCircleRadius, centralCircleStrokeColor, centralCircleFillColor, centralCircleTextColor, containerHeight, containerWidth, circleTitles, selectedCircleIndex} = this.props
+    const { centralCircleRadius, centralCircleStrokeColor, centralCircleFillColor, centralCircleTextColor, containerHeight, containerWidth, circleTitles, selectedCircleIndex, markCircles} = this.props
     const centralCircleText = circleTitles[selectedCircleIndex];
     return (
       <View style={{height:containerHeight, width:containerWidth}}>
@@ -114,9 +117,9 @@ class NetworkGraph extends Component
             {this.addSelectedCircleLines()}
             <G>
               <Circle cx={containerWidth/2} cy={containerHeight/2} r={centralCircleRadius} stroke={centralCircleStrokeColor} strokeWidth="4" fill={centralCircleFillColor} style={{borderWidth:5}} textAnchor="middle"/>
-              <Text x={containerWidth/2 - 10} y={containerHeight/2 - 10} fill={centralCircleTextColor} stroke={centralCircleTextColor}>{centralCircleText}</Text>
+              <Text x={containerWidth/2 - 10} y={containerHeight/2} fill={centralCircleTextColor} stroke={centralCircleTextColor}>{centralCircleText}</Text>
             </G>
-            {this.addCircles()}
+            {this.addCircles(markCircles)}
         </Svg>
       </View>
     )
@@ -125,6 +128,7 @@ class NetworkGraph extends Component
 
 NetworkGraph.propTypes = {
   circleTitles:PropTypes.array.isRequired,
+  markCircles:PropTypes.array,
   selectedCircleIndex:PropTypes.number.isRequired,
   connections:PropTypes.object.isRequired,
   onCircleClick:PropTypes.func.isRequired,
@@ -143,6 +147,7 @@ NetworkGraph.propTypes = {
 }
 
 NetworkGraph.defaultProps = {
+  markCircles:[],
   containerHeight:500,
   containerWidth:500,
   centralCircleRadius:60,

@@ -10,54 +10,42 @@ import Graph from 'graph-data-structure';
 import NetworkGraph from './G';
 import _ from 'lodash';
 
-import { MY_GRAPH, AFFECTED_LIST, POSITIVE } from '../consts';
-import { getData } from '../utils';
+import { MY_GRAPH, AFFECTED_LIST, POSITIVE, P1_DEFAULT } from '../consts';
+import { fetchData } from '../utils';
 
-const fetchData = async () => {
-  const graphDataStr = await getData(MY_GRAPH);
-  const graphData = graphDataStr ? JSON.parse(graphDataStr) : {};
-  return graphData ? graphData : null;
-}
-
-const recursiveTree = (nodeList) => {
-  if (nodeList.length <= 0) {
-    return [];
-  }
-  const head = nodeList.pop();
-  console.log(head);
-  console.log(nodeList);
-  return {id: head,
-    name: head,
-    nodeTextStyle: { fontSize: 12 },
-    imageUrl: { href: { uri: "https://facebook.github.io/react-native/docs/assets/favicon.png"}},
-    nodeImageStyle: { imageHeight: 60 , imageWidth: 60, opacity: 1 },
-    children : [recursiveTree(nodeList)]};
-}
 export default function () {
-  const [ graphData, setGraphData] = useState({});
-  const [ nodes, setNodes ] = useState([]);
-  const [ currentNode, setCurrentNode ] = useState(0);
-
-  useEffect(() => {
+    useEffect(() => {
     // XXX -  Move Read contacts to utils
     (async () => {
-      const rawGraphData = await fetchData();
-          if (rawGraphData) {
+      const rawGraphData = await fetchData(MY_GRAPH);
+      if (rawGraphData) {
             const nodes = _.keys(rawGraphData).map(x => x);
             const newValues = _.keys(rawGraphData).map(x => rawGraphData[x].map(y => nodes.indexOf(y)))
             const newKeys = _.keys(rawGraphData).map( x => nodes.indexOf(x));
             const newGraph = _.fromPairs(_.zip(newKeys, newValues));
             setNodes(nodes);
             setGraphData(newGraph);
-          }
-      })();
+            const rawAffectedList = await fetchData(AFFECTED_LIST);
+
+            if (rawAffectedList) {
+                  // Compute this from the graph
+                  const affectedList = rawAffectedList.map(x => nodes.indexOf(x));
+                  setAffectedList(affectedList);
+            }
+      }
+     })();
     }, []);
 
+    const [ graphData, setGraphData] = useState({});
+    const [ affectedList, setAffectedList] = useState([]);
+    const [ nodes, setNodes ] = useState([]);
+    console.log(affectedList);
 
     return (
         <View style={styles.container}>
           <NetworkGraph
-            selectedCircleIndex={currentNode}
+            selectedCircleIndex={nodes.indexOf(P1_DEFAULT)}
+            markCircles={affectedList}
             circleTitles={nodes}
             connections={graphData}
             containerHeight={300}
@@ -66,7 +54,7 @@ export default function () {
             otherCircleLinesColor="black"
             otherCirclesRadius={40}
             distanceFromCenter={100}
-            onCircleClick={setCurrentNode}/>
+            onCircleClick={console.log}/>
        </View>
     );
 

@@ -4,6 +4,11 @@ import _ from 'lodash';
 
 import { MY_GRAPH, AFFECTED_LIST, POSITIVE } from '../consts';
 
+export const fetchData = async (key) => {
+  const dataStr = await getData(key);
+  return dataStr ? JSON.parse(dataStr) : null;
+}
+
 export const getData = async (key) => {
   try {
     const value = await AsyncStorage.getItem(key);

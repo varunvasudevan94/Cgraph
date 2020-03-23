@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Button } from 'react-native';
 
-import { P1_DEFAULT, P2_DEFAULT, SUBMIT_DEFAULT, UNKNOWN, POSITIVE, NEGATIVE } from '../consts';
-
 import AutoComplete from 'react-native-autocomplete-select';
 import Select from 'react-native-simple-select';
+import { AsyncStorage, Alert } from 'react-native';
 
 import * as Contacts from 'expo-contacts';
+import _ from 'lodash';
+import { P1_DEFAULT, P2_DEFAULT, SUBMIT_DEFAULT, UNKNOWN, POSITIVE, NEGATIVE, MY_GRAPH, AFFECTED_LIST } from '../consts';
 
-import { getData, setData } from '../utils';
+import { getData, setData, fetchData } from '../utils';
 
 export default function App() {
   const [ contact, setContact ] = useState([]);
@@ -16,32 +17,44 @@ export default function App() {
   const [ stat1, setStat1 ] = useState(UNKNOWN);
   const [submit, setSubmit] = useState(SUBMIT_DEFAULT);
 
-
   useEffect(() => {
-    // XXX -  Move Read contacts to utils
-    (async () => {
-      const { status } = await Contacts.requestPermissionsAsync();
-      if (status === 'granted') {
-        const { data } = await Contacts.getContactsAsync({
-          fields: [Contacts.Fields.Emails],
-        });
-
-        if (data.length > 0) {
-          setContact(data);
-        }
-      }
-    })();
+  // XXX -  Move Read contacts to utils
+  (async () => {
+    const rawGraphData = await fetchData(MY_GRAPH);
+    if (rawGraphData) {
+          const nodes = _.keys(rawGraphData).map(x => {return {name: x}});
+          console.log(nodes);
+          setContact(nodes);
+    }
+   })();
   }, []);
 
   useEffect(() => {
       // Perform some validations here
       // Fill this up
+      if (submit) {
+        (async () => {
+          const rawAffectedList = await fetchData(AFFECTED_LIST);
+          if (rawAffectedList) {
+                const newList = _.concat(rawAffectedList, [P1]);
+                // Write this into file
+                const _ret = await
+                            AsyncStorage.setItem(AFFECTED_LIST,
+                              JSON.stringify(_.uniq(newList)));
+                Alert.alert(`Status of ${P1} changed to ${stat1}`);
+                setP1(P1_DEFAULT);
+                setSubmit(SUBMIT_DEFAULT);
+
+          }
+         })();
+     }
   }, [submit]);
 
 
   const contactList = contact.map(x => {return {text: x.name} });
   const statusList = [UNKNOWN, POSITIVE, NEGATIVE];
-
+  console.log('ggggggggggggg');
+  console.log()
   return (
     <View
       style={{
